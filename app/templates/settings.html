@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+
+{% block title %}Settings - Bookmark Master{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Settings</h1>
+        <p class="mt-1 text-gray-500 dark:text-gray-400">
+            Manage your account and preferences
+        </p>
+    </div>
+
+    <!-- Profile Settings -->
+    <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6 mb-6">
+        <h2 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Profile Information</h2>
+        
+        <form id="profile-form" class="space-y-4">
+            <div>
+                <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Email
+                </label>
+                <input type="email" 
+                       id="email" 
+                       name="email" 
+                       value="{{ user.email }}"
+                       disabled
+                       class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400">
+                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Email cannot be changed</p>
+            </div>
+
+            <div>
+                <label for="display_name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Display Name
+                </label>
+                <input type="text" 
+                       id="display_name" 
+                       name="display_name" 
+                       value="{{ user.display_name or '' }}"
+                       placeholder="Your display name"
+                       class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+            </div>
+
+            <div>
+                <button type="submit" class="btn btn-primary">
+                    Update Profile
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Password Change -->
+    <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6 mb-6">
+        <h2 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Change Password</h2>
+        
+        <form id="password-form" class="space-y-4">
+            <div>
+                <label for="current_password" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Current Password
+                </label>
+                <input type="password" 
+                       id="current_password" 
+                       name="current_password" 
+                       required
+                       class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+            </div>
+
+            <div>
+                <label for="new_password" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    New Password
+                </label>
+                <input type="password" 
+                       id="new_password" 
+                       name="new_password" 
+                       required
+                       class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+            </div>
+
+            <div>
+                <label for="confirm_password" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Confirm New Password
+                </label>
+                <input type="password" 
+                       id="confirm_password" 
+                       name="confirm_password" 
+                       required
+                       class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+            </div>
+
+            <div>
+                <button type="submit" class="btn btn-primary">
+                    Change Password
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Account Stats -->
+    <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+        <h2 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Account Information</h2>
+        
+        <dl class="grid grid-cols-1 gap-x-4 gap-y-4 sm:grid-cols-2">
+            <div>
+                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Member since</dt>
+                <dd class="mt-1 text-sm text-gray-900 dark:text-white">
+                    {{ user.created_at.strftime('%B %d, %Y') if user.created_at else 'Unknown' }}
+                </dd>
+            </div>
+            <div>
+                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Account type</dt>
+                <dd class="mt-1 text-sm text-gray-900 dark:text-white">
+                    {{ 'Administrator' if user.is_admin else 'User' }}
+                </dd>
+            </div>
+        </dl>
+    </div>
+</div>
+
+<script>
+// Profile form handling
+document.getElementById('profile-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    // Profile update functionality would go here
+    alert('Profile update functionality not implemented in this demo');
+});
+
+// Password form handling
+document.getElementById('password-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const newPassword = formData.get('new_password');
+    const confirmPassword = formData.get('confirm_password');
+    
+    if (newPassword !== confirmPassword) {
+        alert('New passwords do not match');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/web-api/auth/change-password', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                current_password: formData.get('current_password'),
+                new_password: newPassword
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            alert('Password changed successfully');
+            this.reset();
+        } else {
+            alert('Error: ' + (data.error || 'Failed to change password'));
+        }
+    } catch (error) {
+        alert('Network error');
+    }
+});
+</script>
+{% endblock %}

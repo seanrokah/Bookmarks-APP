@@ -1,0 +1,429 @@
+{% extends "base.html" %}
+
+{% block title %}Bookmarks - Bookmark Master{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Header -->
+    <div class="mb-8">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Bookmarks</h1>
+                <p class="mt-1 text-gray-500 dark:text-gray-400">
+                    Manage and organize your bookmark collection
+                </p>
+            </div>
+            <div class="flex space-x-3">
+                <a href="{{ url_for('main.add_bookmark') }}" 
+                   class="btn btn-primary">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                    </svg>
+                    Add Bookmark
+                </a>
+                <a href="{{ url_for('main.bulk_add') }}" 
+                   class="btn btn-secondary">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                    </svg>
+                    Bulk Import
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search and Filters -->
+    <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6 mb-8">
+        <form method="GET" class="space-y-4" id="filter-form">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <!-- Search -->
+                <div>
+                    <label for="query" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        Search
+                    </label>
+                    <div class="relative">
+                        <input type="search" 
+                               id="query" 
+                               name="query" 
+                               value="{{ current_query }}"
+                               placeholder="Search bookmarks..."
+                               class="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md leading-5 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                        Press / to focus search
+                    </p>
+                </div>
+
+                <!-- Category Filter -->
+                <div>
+                    <label for="category_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        Category
+                    </label>
+                    <select id="category_id" 
+                            name="category_id" 
+                            class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                        <option value="">All categories</option>
+                        {% for category in categories %}
+                            <option value="{{ category.id }}" {% if current_category_id == category.id %}selected{% endif %}>
+                                {{ category.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Tag Filter -->
+                <div>
+                    <label for="tag" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        Tag
+                    </label>
+                    <select id="tag" 
+                            name="tag" 
+                            class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                        <option value="">All tags</option>
+                        {% for tag in tags %}
+                            <option value="{{ tag.name }}" {% if current_tag == tag.name %}selected{% endif %}>
+                                {{ tag.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Archive Filter -->
+                <div class="flex items-center">
+                    <input type="checkbox" 
+                           id="include_archived" 
+                           name="include_archived" 
+                           value="true"
+                           {% if include_archived %}checked{% endif %}
+                           class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600 rounded">
+                    <label for="include_archived" class="ml-2 block text-sm text-gray-900 dark:text-white">
+                        Include archived
+                    </label>
+                </div>
+            </div>
+
+            <div class="flex justify-between items-center">
+                <button type="submit" 
+                        class="btn btn-primary">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                    Search
+                </button>
+                <a href="{{ url_for('main.bookmarks') }}" 
+                   class="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
+                    Clear filters
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Bookmarks Grid -->
+    <div id="bookmarks-container" 
+         hx-get="/web-api/bookmarks" 
+         hx-trigger="load"
+         hx-vals='{"query": "{{ current_query }}", "category_id": "{{ current_category_id or '' }}", "tag": "{{ current_tag }}", "include_archived": "{{ include_archived|string|lower }}"}'
+         hx-target="#bookmarks-grid"
+         class="min-h-96">
+        
+        <!-- Loading State -->
+        <div id="bookmarks-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for i in range(6) %}
+                <div class="bookmark-card bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                    <div class="animate-pulse">
+                        <div class="flex items-center mb-4">
+                            <div class="w-6 h-6 bg-gray-300 dark:bg-gray-600 rounded loading-skeleton"></div>
+                            <div class="ml-3 h-4 bg-gray-300 dark:bg-gray-600 rounded loading-skeleton flex-1"></div>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="h-3 bg-gray-300 dark:bg-gray-600 rounded loading-skeleton"></div>
+                            <div class="h-3 bg-gray-300 dark:bg-gray-600 rounded loading-skeleton w-3/4"></div>
+                        </div>
+                        <div class="mt-4 flex flex-wrap gap-2">
+                            <div class="h-6 bg-gray-300 dark:bg-gray-600 rounded loading-skeleton w-16"></div>
+                            <div class="h-6 bg-gray-300 dark:bg-gray-600 rounded loading-skeleton w-20"></div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<script>
+// Auto-submit form when filters change
+document.getElementById('filter-form').addEventListener('change', function() {
+    this.submit();
+});
+
+// Handle HTMX responses
+document.addEventListener('htmx:responseError', function(evt) {
+    console.error('Error loading bookmarks:', evt.detail.xhr.responseText);
+    document.getElementById('bookmarks-grid').innerHTML = `
+        <div class="col-span-full text-center py-12">
+            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+            </svg>
+            <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">Error loading bookmarks</h3>
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Please try refreshing the page.</p>
+        </div>
+    `;
+});
+
+document.addEventListener('htmx:afterRequest', function(evt) {
+    if (evt.detail.xhr.status === 200) {
+        const response = JSON.parse(evt.detail.xhr.responseText);
+        if (response.bookmarks) {
+            renderBookmarks(response.bookmarks, response.pagination);
+        }
+    }
+});
+
+function renderBookmarks(bookmarks, pagination) {
+    const container = document.getElementById('bookmarks-grid');
+    
+    if (bookmarks.length === 0) {
+        container.innerHTML = `
+            <div class="col-span-full text-center py-12">
+                <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path>
+                </svg>
+                <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">No bookmarks found</h3>
+                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Try adjusting your search criteria or add some bookmarks.</p>
+                <div class="mt-6">
+                    <a href="{{ url_for('main.add_bookmark') }}" class="btn btn-primary">
+                        Add your first bookmark
+                    </a>
+                </div>
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = bookmarks.map(bookmark => `
+        <div class="bookmark-card bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-lg transition-shadow duration-300 p-6 animate-fade-in">
+            <div class="flex items-start justify-between mb-4">
+                <div class="flex items-center space-x-3 flex-1 min-w-0">
+                    ${bookmark.favicon_url ? 
+                        `<img src="${bookmark.favicon_url}" alt="Favicon" class="w-6 h-6 rounded flex-shrink-0" onerror="this.style.display='none'">` :
+                        `<div class="w-6 h-6 bg-blue-500 rounded flex-shrink-0"></div>`
+                    }
+                    <div class="min-w-0 flex-1">
+                        <h3 class="text-lg font-medium text-gray-900 dark:text-white truncate">
+                            <a href="${bookmark.url}" target="_blank" rel="noopener noreferrer" class="hover:text-blue-600 dark:hover:text-blue-400">
+                                ${bookmark.title || bookmark.url}
+                            </a>
+                        </h3>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 truncate">
+                            ${new URL(bookmark.url).hostname}
+                        </p>
+                    </div>
+                </div>
+                <div class="flex space-x-2 flex-shrink-0">
+                    <button onclick="editBookmark(${bookmark.id})" class="text-gray-400 hover:text-blue-600 dark:hover:text-blue-400">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                        </svg>
+                    </button>
+                    <a href="/api/v1/r/${bookmark.id}" class="text-gray-400 hover:text-green-600 dark:hover:text-green-400">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-2M7 7l10 10M17 7l-10 10"></path>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+            
+            ${bookmark.og_description ? `
+                <p class="text-sm text-gray-600 dark:text-gray-300 mb-3 line-clamp-2">
+                    ${bookmark.og_description}
+                </p>
+            ` : ''}
+            
+            ${bookmark.tags && bookmark.tags.length > 0 ? `
+                <div class="flex flex-wrap gap-2 mb-3">
+                    ${bookmark.tags.map(tag => `
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                            ${tag.name}
+                        </span>
+                    `).join('')}
+                </div>
+            ` : ''}
+            
+            <div class="flex justify-between items-center text-xs text-gray-500 dark:text-gray-400">
+                <span>${new Date(bookmark.created_at).toLocaleDateString()}</span>
+                ${bookmark.category ? `<span class="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded">${bookmark.category.name}</span>` : ''}
+            </div>
+        </div>
+    `).join('');
+}
+
+async function editBookmark(id) {
+    try {
+        // Fetch bookmark data
+        const response = await fetch(`/web-api/bookmarks/${id}`);
+        if (!response.ok) {
+            alert('Failed to load bookmark');
+            return;
+        }
+        
+        const data = await response.json();
+        const bookmark = data.bookmark;
+        
+        // Create edit modal
+        showEditModal(bookmark);
+        
+    } catch (error) {
+        alert('Network error');
+    }
+}
+
+function showEditModal(bookmark) {
+    // Create modal HTML
+    const modalHTML = `
+        <div id="edit-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+            <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white dark:bg-gray-800">
+                <div class="mb-4">
+                    <h3 class="text-lg font-bold text-gray-900 dark:text-white">Edit Bookmark</h3>
+                </div>
+                
+                <form id="edit-bookmark-form" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Title</label>
+                        <input type="text" id="edit-title" value="${bookmark.title || ''}" 
+                               class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Category</label>
+                        <select id="edit-category" class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                            <option value="">No Category</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tags</label>
+                        <input type="text" id="edit-tags" value="${bookmark.tags ? bookmark.tags.map(t => t.name).join(', ') : ''}"
+                               placeholder="Enter tags separated by commas"
+                               class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Notes</label>
+                        <textarea id="edit-notes" rows="3" 
+                                  class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white">${bookmark.note_md || ''}</textarea>
+                    </div>
+                    
+                    <div class="flex items-center">
+                        <input type="checkbox" id="edit-archived" ${bookmark.is_archived ? 'checked' : ''}
+                               class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                        <label for="edit-archived" class="ml-2 block text-sm text-gray-900 dark:text-white">Archived</label>
+                    </div>
+                    
+                    <div class="flex justify-between space-x-2 pt-4">
+                        <button type="button" onclick="deleteBookmark(${bookmark.id})" 
+                                class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">Delete</button>
+                        <div class="space-x-2">
+                            <button type="button" onclick="closeEditModal()" 
+                                    class="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400">Cancel</button>
+                            <button type="submit" 
+                                    class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Save</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    `;
+    
+    // Add modal to page
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    
+    // Populate categories dropdown
+    const categorySelect = document.getElementById('edit-category');
+    {% for category in categories %}
+        const option{{ category.id }} = document.createElement('option');
+        option{{ category.id }}.value = '{{ category.id }}';
+        option{{ category.id }}.textContent = '{{ category.name }}';
+        if (bookmark.category_id === {{ category.id }}) {
+            option{{ category.id }}.selected = true;
+        }
+        categorySelect.appendChild(option{{ category.id }});
+    {% endfor %}
+    
+    // Handle form submission
+    document.getElementById('edit-bookmark-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        await updateBookmark(bookmark.id);
+    });
+}
+
+async function updateBookmark(id) {
+    const title = document.getElementById('edit-title').value.trim();
+    const categoryId = document.getElementById('edit-category').value || null;
+    const tagsText = document.getElementById('edit-tags').value.trim();
+    const notes = document.getElementById('edit-notes').value.trim();
+    const isArchived = document.getElementById('edit-archived').checked;
+    
+    const tags = tagsText ? tagsText.split(',').map(tag => tag.trim()).filter(tag => tag) : [];
+    
+    try {
+        const response = await fetch(`/web-api/bookmarks/${id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                title: title || null,
+                category_id: categoryId,
+                tags: tags,
+                note_md: notes || null,
+                is_archived: isArchived
+            })
+        });
+        
+        if (response.ok) {
+            closeEditModal();
+            // Reload bookmarks
+            htmx.trigger('#bookmarks-container', 'load');
+        } else {
+            const data = await response.json();
+            alert('Error: ' + (data.error || 'Failed to update bookmark'));
+        }
+    } catch (error) {
+        alert('Network error');
+    }
+}
+
+async function deleteBookmark(id) {
+    if (!confirm('Are you sure you want to delete this bookmark?')) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/web-api/bookmarks/${id}`, {
+            method: 'DELETE'
+        });
+        
+        if (response.ok) {
+            closeEditModal();
+            // Reload bookmarks
+            htmx.trigger('#bookmarks-container', 'load');
+        } else {
+            const data = await response.json();
+            alert('Error: ' + (data.error || 'Failed to delete bookmark'));
+        }
+    } catch (error) {
+        alert('Network error');
+    }
+}
+
+function closeEditModal() {
+    const modal = document.getElementById('edit-modal');
+    if (modal) {
+        modal.remove();
+    }
+}
+</script>
+{% endblock %}

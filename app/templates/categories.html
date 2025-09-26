@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block title %}Categories - Bookmark Master{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Categories</h1>
+        <p class="mt-1 text-gray-500 dark:text-gray-400">
+            Organize your bookmarks into categories
+        </p>
+    </div>
+
+    <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+        <div class="mb-6">
+            <button onclick="showCreateForm()" class="btn btn-primary">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                </svg>
+                Add Category
+            </button>
+        </div>
+
+        <!-- Categories List -->
+        <div class="space-y-4">
+            {% for category in categories %}
+                <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                    <div>
+                        <h3 class="font-medium text-gray-900 dark:text-white">
+                            {{ category.name }}
+                        </h3>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">
+                            {{ category.bookmark_count }} bookmarks
+                        </p>
+                    </div>
+                    <div class="flex space-x-2">
+                        <a href="{{ url_for('main.bookmarks', category_id=category.id) }}" 
+                           class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">
+                            View
+                        </a>
+                        <button onclick="editCategory({{ category.id }}, '{{ category.name }}')" 
+                                class="text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-300">
+                            Edit
+                        </button>
+                        <button onclick="deleteCategory({{ category.id }}, '{{ category.name }}')" 
+                                class="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300">
+                            Delete
+                        </button>
+                    </div>
+                </div>
+            {% else %}
+                <div class="text-center py-8">
+                    <p class="text-gray-500 dark:text-gray-400">No categories yet. Create your first category!</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Simple modals and scripts would go here -->
+<script>
+function showCreateForm() {
+    const name = prompt('Enter category name:');
+    if (name) {
+        createCategory(name);
+    }
+}
+
+async function createCategory(name) {
+    try {
+        const response = await fetch('/web-api/categories', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name })
+        });
+        
+        if (response.ok) {
+            location.reload();
+        } else {
+            const data = await response.json();
+            alert('Error: ' + (data.error || 'Failed to create category'));
+        }
+    } catch (error) {
+        alert('Network error');
+    }
+}
+
+function editCategory(id, currentName) {
+    const name = prompt('Edit category name:', currentName);
+    if (name && name !== currentName) {
+        updateCategory(id, name);
+    }
+}
+
+async function updateCategory(id, name) {
+    try {
+        const response = await fetch(`/web-api/categories/${id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name })
+        });
+        
+        if (response.ok) {
+            location.reload();
+        } else {
+            const data = await response.json();
+            alert('Error: ' + (data.error || 'Failed to update category'));
+        }
+    } catch (error) {
+        alert('Network error');
+    }
+}
+
+function deleteCategory(id, name) {
+    if (confirm(`Delete category "${name}"? Bookmarks will be moved to uncategorized.`)) {
+        performDeleteCategory(id);
+    }
+}
+
+async function performDeleteCategory(id) {
+    try {
+        const response = await fetch(`/web-api/categories/${id}`, {
+            method: 'DELETE'
+        });
+        
+        if (response.ok) {
+            location.reload();
+        } else {
+            const data = await response.json();
+            alert('Error: ' + (data.error || 'Failed to delete category'));
+        }
+    } catch (error) {
+        alert('Network error');
+    }
+}
+</script>
+{% endblock %}

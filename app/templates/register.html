@@ -1,0 +1,236 @@
+{% extends "base.html" %}
+
+{% block title %}Sign Up - Bookmark Master{% endblock %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full space-y-8">
+        <div>
+            <div class="mx-auto h-12 w-12 flex items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900">
+                <svg class="h-8 w-8 text-blue-600 dark:text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M5 4a2 2 0 012-2h6a2 2 0 012 2v14l-5-2.5L5 18V4z"></path>
+                </svg>
+            </div>
+            <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-white">
+                Create your account
+            </h2>
+            <p class="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
+                Or
+                <a href="{{ url_for('main.login_page') }}" 
+                   class="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300">
+                    sign in to existing account
+                </a>
+            </p>
+        </div>
+        
+        <form id="register-form" class="mt-8 space-y-6">
+            <div class="rounded-md shadow-sm -space-y-px">
+                <div>
+                    <label for="email" class="sr-only">Email address</label>
+                    <input id="email" 
+                           name="email" 
+                           type="email" 
+                           autocomplete="email" 
+                           required 
+                           class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white bg-white dark:bg-gray-800 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm" 
+                           placeholder="Email address">
+                </div>
+                <div>
+                    <label for="display_name" class="sr-only">Display Name</label>
+                    <input id="display_name" 
+                           name="display_name" 
+                           type="text" 
+                           autocomplete="name" 
+                           class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm" 
+                           placeholder="Display name (optional)">
+                </div>
+                <div>
+                    <label for="password" class="sr-only">Password</label>
+                    <input id="password" 
+                           name="password" 
+                           type="password" 
+                           autocomplete="new-password" 
+                           required 
+                           class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm" 
+                           placeholder="Password">
+                </div>
+                <div>
+                    <label for="confirm_password" class="sr-only">Confirm Password</label>
+                    <input id="confirm_password" 
+                           name="confirm_password" 
+                           type="password" 
+                           autocomplete="new-password" 
+                           required 
+                           class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white bg-white dark:bg-gray-800 rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm" 
+                           placeholder="Confirm password">
+                </div>
+            </div>
+
+            <!-- Password Requirements -->
+            <div class="text-sm text-gray-600 dark:text-gray-400">
+                <p class="mb-2">Password requirements:</p>
+                <ul class="list-disc list-inside space-y-1">
+                    <li id="length-req" class="flex items-center">
+                        <span class="mr-2">At least 8 characters</span>
+                        <svg class="w-4 h-4 text-gray-400" id="length-check" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </li>
+                    <li id="letter-req" class="flex items-center">
+                        <span class="mr-2">At least one letter</span>
+                        <svg class="w-4 h-4 text-gray-400" id="letter-check" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </li>
+                    <li id="number-req" class="flex items-center">
+                        <span class="mr-2">At least one number</span>
+                        <svg class="w-4 h-4 text-gray-400" id="number-check" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </li>
+                </ul>
+            </div>
+
+            <div>
+                <button type="submit" 
+                        class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200">
+                    <span class="absolute left-0 inset-y-0 flex items-center pl-3">
+                        <svg class="h-5 w-5 text-blue-500 group-hover:text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6z"></path>
+                        </svg>
+                    </span>
+                    <span id="register-text">Create account</span>
+                    <span id="register-spinner" class="hidden">
+                        <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Creating account...
+                    </span>
+                </button>
+            </div>
+
+            <!-- Error Message -->
+            <div id="error-message" class="hidden rounded-md bg-red-50 dark:bg-red-900 p-4">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm text-red-800 dark:text-red-200" id="error-text"></p>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+// Password validation
+function validatePassword(password) {
+    const requirements = {
+        length: password.length >= 8,
+        letter: /[A-Za-z]/.test(password),
+        number: /\d/.test(password)
+    };
+    
+    // Update UI indicators
+    updateRequirement('length', requirements.length);
+    updateRequirement('letter', requirements.letter);
+    updateRequirement('number', requirements.number);
+    
+    return Object.values(requirements).every(req => req);
+}
+
+function updateRequirement(type, valid) {
+    const check = document.getElementById(`${type}-check`);
+    if (valid) {
+        check.classList.remove('text-gray-400');
+        check.classList.add('text-green-500');
+        check.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>';
+    } else {
+        check.classList.remove('text-green-500');
+        check.classList.add('text-gray-400');
+        check.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>';
+    }
+}
+
+document.getElementById('password').addEventListener('input', function(e) {
+    validatePassword(e.target.value);
+});
+
+document.getElementById('register-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const button = this.querySelector('button[type="submit"]');
+    const registerText = document.getElementById('register-text');
+    const registerSpinner = document.getElementById('register-spinner');
+    const errorMessage = document.getElementById('error-message');
+    const errorText = document.getElementById('error-text');
+    
+    const formData = new FormData(this);
+    const password = formData.get('password');
+    const confirmPassword = formData.get('confirm_password');
+    
+    // Client-side validation
+    if (password !== confirmPassword) {
+        errorText.textContent = 'Passwords do not match';
+        errorMessage.classList.remove('hidden');
+        return;
+    }
+    
+    if (!validatePassword(password)) {
+        errorText.textContent = 'Password does not meet requirements';
+        errorMessage.classList.remove('hidden');
+        return;
+    }
+    
+    // Show loading state
+    button.disabled = true;
+    registerText.classList.add('hidden');
+    registerSpinner.classList.remove('hidden');
+    errorMessage.classList.add('hidden');
+    
+    try {
+        const response = await fetch('/web-register', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                email: formData.get('email'),
+                password: password,
+                display_name: formData.get('display_name')
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            // Success - redirect to dashboard
+            window.location.href = data.redirect;
+        } else {
+            // Show error
+            errorText.textContent = data.error || 'Registration failed';
+            errorMessage.classList.remove('hidden');
+            
+            // Reset form state
+            button.disabled = false;
+            registerText.classList.remove('hidden');
+            registerSpinner.classList.add('hidden');
+        }
+    } catch (error) {
+        // Network error
+        errorText.textContent = 'Network error. Please try again.';
+        errorMessage.classList.remove('hidden');
+        
+        // Reset form state
+        button.disabled = false;
+        registerText.classList.remove('hidden');
+        registerSpinner.classList.add('hidden');
+    }
+});
+</script>
+{% endblock %}

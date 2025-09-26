@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}Search - Bookmark Master{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Advanced Search</h1>
+        <p class="mt-1 text-gray-500 dark:text-gray-400">
+            Find exactly what you're looking for
+        </p>
+    </div>
+
+    <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+        <form method="GET" action="{{ url_for('main.bookmarks') }}" class="space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label for="query" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Search Terms
+                    </label>
+                    <input type="search" 
+                           id="query" 
+                           name="query" 
+                           placeholder="Search in titles, descriptions, and notes..."
+                           class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                </div>
+
+                <div>
+                    <label for="category_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Category
+                    </label>
+                    <select id="category_id" 
+                            name="category_id" 
+                            class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                        <option value="">All categories</option>
+                        {% for category in categories %}
+                            <option value="{{ category.id }}">{{ category.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div>
+                    <label for="tag" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Tag
+                    </label>
+                    <select id="tag" 
+                            name="tag" 
+                            class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                        <option value="">All tags</option>
+                        {% for tag in tags %}
+                            <option value="{{ tag.name }}">{{ tag.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center">
+                        <input type="checkbox" 
+                               id="include_archived" 
+                               name="include_archived" 
+                               value="true"
+                               class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600 rounded">
+                        <label for="include_archived" class="ml-2 block text-sm text-gray-900 dark:text-white">
+                            Include archived
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-center">
+                <button type="submit" class="btn btn-primary px-8">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                    Search Bookmarks
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Search Tips -->
+    <div class="mt-8 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-6">
+        <h3 class="text-lg font-medium text-blue-900 dark:text-blue-200 mb-3">Search Tips</h3>
+        <ul class="text-sm text-blue-800 dark:text-blue-300 space-y-1">
+            <li>• Use quotes for exact phrases: "web development"</li>
+            <li>• Search across titles, descriptions, and your personal notes</li>
+            <li>• Combine filters to narrow down results</li>
+            <li>• Press "/" anywhere to focus the search box</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

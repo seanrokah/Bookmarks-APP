@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+
+{% block title %}Add Bookmark - Bookmark Master{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+        <div class="mb-6">
+            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Add New Bookmark</h1>
+            <p class="mt-1 text-gray-500 dark:text-gray-400">
+                Save a new bookmark to your collection
+            </p>
+        </div>
+
+        <form id="bookmark-form" class="space-y-6">
+            <!-- URL -->
+            <div>
+                <label for="url" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    URL *
+                </label>
+                <input type="url" 
+                       id="url" 
+                       name="url" 
+                       required
+                       placeholder="https://example.com"
+                       class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+            </div>
+
+            <!-- Title -->
+            <div>
+                <label for="title" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Title
+                </label>
+                <input type="text" 
+                       id="title" 
+                       name="title" 
+                       placeholder="Leave empty to auto-fetch from page"
+                       class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+            </div>
+
+            <!-- Category -->
+            <div>
+                <label for="category_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Category
+                </label>
+                <select id="category_id" 
+                        name="category_id" 
+                        class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                    <option value="">Select a category</option>
+                    {% for category in categories %}
+                        <option value="{{ category.id }}">{{ category.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Tags -->
+            <div>
+                <label for="tags" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Tags
+                </label>
+                <input type="text" 
+                       id="tags" 
+                       name="tags" 
+                       placeholder="Enter tags separated by commas"
+                       class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                    Example: web, development, tutorial
+                </p>
+            </div>
+
+            <!-- Notes -->
+            <div>
+                <label for="note_md" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Notes
+                </label>
+                <textarea id="note_md" 
+                          name="note_md" 
+                          rows="4"
+                          placeholder="Add any notes about this bookmark (Markdown supported)"
+                          class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"></textarea>
+            </div>
+
+            <!-- Actions -->
+            <div class="flex justify-between items-center">
+                <a href="{{ url_for('main.bookmarks') }}" 
+                   class="btn btn-secondary">
+                    Cancel
+                </a>
+                <button type="submit" 
+                        class="btn btn-primary">
+                    <span id="submit-text">Save Bookmark</span>
+                    <span id="submit-spinner" class="hidden">
+                        <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Saving...
+                    </span>
+                </button>
+            </div>
+
+            <!-- Error Message -->
+            <div id="error-message" class="hidden rounded-md bg-red-50 dark:bg-red-900 p-4">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm text-red-800 dark:text-red-200" id="error-text"></p>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.getElementById('bookmark-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const button = this.querySelector('button[type="submit"]');
+    const submitText = document.getElementById('submit-text');
+    const submitSpinner = document.getElementById('submit-spinner');
+    const errorMessage = document.getElementById('error-message');
+    const errorText = document.getElementById('error-text');
+    
+    // Show loading state
+    button.disabled = true;
+    submitText.classList.add('hidden');
+    submitSpinner.classList.remove('hidden');
+    errorMessage.classList.add('hidden');
+    
+    try {
+        const formData = new FormData(this);
+        const tags = formData.get('tags');
+        
+        const payload = {
+            url: formData.get('url'),
+            title: formData.get('title') || undefined,
+            category_id: formData.get('category_id') || undefined,
+            note_md: formData.get('note_md') || undefined,
+            tags: tags ? tags.split(',').map(tag => tag.trim()).filter(tag => tag) : []
+        };
+        
+        const response = await fetch('/web-api/bookmarks', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(payload)
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            // Success - redirect to bookmarks page
+            window.location.href = '{{ url_for("main.bookmarks") }}';
+        } else {
+            // Show error
+            errorText.textContent = data.error || 'Failed to save bookmark';
+            errorMessage.classList.remove('hidden');
+            
+            // Reset form state
+            button.disabled = false;
+            submitText.classList.remove('hidden');
+            submitSpinner.classList.add('hidden');
+        }
+    } catch (error) {
+        // Network error
+        errorText.textContent = 'Network error. Please try again.';
+        errorMessage.classList.remove('hidden');
+        
+        // Reset form state
+        button.disabled = false;
+        submitText.classList.remove('hidden');
+        submitSpinner.classList.add('hidden');
+    }
+});
+</script>
+{% endblock %}
