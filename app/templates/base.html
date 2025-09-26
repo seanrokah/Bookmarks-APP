@@ -38,6 +38,13 @@
     
     <!-- HTMX -->
     <script src="https://unpkg.com/htmx.org@1.9.6"></script>
+    <script>
+        // Configure HTMX to include credentials (cookies) in all requests
+        document.addEventListener('DOMContentLoaded', function() {
+            htmx.config.includeCredentials = true;
+            htmx.config.withCredentials = true;
+        });
+    </script>
     
     <!-- Sortable.js for drag & drop -->
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>

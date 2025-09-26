@@ -129,6 +129,7 @@
          hx-trigger="load"
          hx-vals='{"query": "{{ current_query }}", "category_id": "{{ current_category_id or '' }}", "tag": "{{ current_tag }}", "include_archived": "{{ include_archived|string|lower }}"}'
          hx-target="#bookmarks-grid"
+         hx-headers='{"X-Requested-With": "XMLHttpRequest"}'
          class="min-h-96">
         
         <!-- Loading State -->
@@ -163,104 +164,30 @@ document.getElementById('filter-form').addEventListener('change', function() {
 
 // Handle HTMX responses
 document.addEventListener('htmx:responseError', function(evt) {
-    console.error('Error loading bookmarks:', evt.detail.xhr.responseText);
+    console.error('Error loading bookmarks:', evt.detail.xhr.status, evt.detail.xhr.responseText);
+    const errorMessage = evt.detail.xhr.status === 401 ? 'Session expired. Please refresh the page.' : 'Error loading bookmarks. Please try refreshing the page.';
     document.getElementById('bookmarks-grid').innerHTML = `
         <div class="col-span-full text-center py-12">
             <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
             </svg>
             <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">Error loading bookmarks</h3>
-            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Please try refreshing the page.</p>
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">${errorMessage}</p>
+            <button onclick="location.reload()" class="mt-4 btn btn-primary">Refresh Page</button>
         </div>
     `;
 });
 
-document.addEventListener('htmx:afterRequest', function(evt) {
-    if (evt.detail.xhr.status === 200) {
-        const response = JSON.parse(evt.detail.xhr.responseText);
-        if (response.bookmarks) {
-            renderBookmarks(response.bookmarks, response.pagination);
-        }
-    }
+// Add debugging for HTMX requests
+document.addEventListener('htmx:beforeRequest', function(evt) {
+    console.log('HTMX request starting:', evt.detail.requestConfig.path);
 });
 
-function renderBookmarks(bookmarks, pagination) {
-    const container = document.getElementById('bookmarks-grid');
-    
-    if (bookmarks.length === 0) {
-        container.innerHTML = `
-            <div class="col-span-full text-center py-12">
-                <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path>
-                </svg>
-                <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">No bookmarks found</h3>
-                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Try adjusting your search criteria or add some bookmarks.</p>
-                <div class="mt-6">
-                    <a href="{{ url_for('main.add_bookmark') }}" class="btn btn-primary">
-                        Add your first bookmark
-                    </a>
-                </div>
-            </div>
-        `;
-        return;
-    }
-    
-    container.innerHTML = bookmarks.map(bookmark => `
-        <div class="bookmark-card bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-lg transition-shadow duration-300 p-6 animate-fade-in">
-            <div class="flex items-start justify-between mb-4">
-                <div class="flex items-center space-x-3 flex-1 min-w-0">
-                    ${bookmark.favicon_url ? 
-                        `<img src="${bookmark.favicon_url}" alt="Favicon" class="w-6 h-6 rounded flex-shrink-0" onerror="this.style.display='none'">` :
-                        `<div class="w-6 h-6 bg-blue-500 rounded flex-shrink-0"></div>`
-                    }
-                    <div class="min-w-0 flex-1">
-                        <h3 class="text-lg font-medium text-gray-900 dark:text-white truncate">
-                            <a href="${bookmark.url}" target="_blank" rel="noopener noreferrer" class="hover:text-blue-600 dark:hover:text-blue-400">
-                                ${bookmark.title || bookmark.url}
-                            </a>
-                        </h3>
-                        <p class="text-sm text-gray-500 dark:text-gray-400 truncate">
-                            ${new URL(bookmark.url).hostname}
-                        </p>
-                    </div>
-                </div>
-                <div class="flex space-x-2 flex-shrink-0">
-                    <button onclick="editBookmark(${bookmark.id})" class="text-gray-400 hover:text-blue-600 dark:hover:text-blue-400">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                        </svg>
-                    </button>
-                    <a href="/api/v1/r/${bookmark.id}" class="text-gray-400 hover:text-green-600 dark:hover:text-green-400">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-2M7 7l10 10M17 7l-10 10"></path>
-                        </svg>
-                    </a>
-                </div>
-            </div>
-            
-            ${bookmark.og_description ? `
-                <p class="text-sm text-gray-600 dark:text-gray-300 mb-3 line-clamp-2">
-                    ${bookmark.og_description}
-                </p>
-            ` : ''}
-            
-            ${bookmark.tags && bookmark.tags.length > 0 ? `
-                <div class="flex flex-wrap gap-2 mb-3">
-                    ${bookmark.tags.map(tag => `
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                            ${tag.name}
-                        </span>
-                    `).join('')}
-                </div>
-            ` : ''}
-            
-            <div class="flex justify-between items-center text-xs text-gray-500 dark:text-gray-400">
-                <span>${new Date(bookmark.created_at).toLocaleDateString()}</span>
-                ${bookmark.category ? `<span class="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded">${bookmark.category.name}</span>` : ''}
-            </div>
-        </div>
-    `).join('');
-}
+document.addEventListener('htmx:afterRequest', function(evt) {
+    console.log('HTMX request completed:', evt.detail.xhr.status, evt.detail.requestConfig.path);
+});
+
+// HTMX handles HTML injection automatically, no need for custom JSON parsing
 
 async function editBookmark(id) {
     try {

@@ -695,10 +695,10 @@ def web_delete_tag(tag_id):
 
 @main_bp.route('/web-api/bookmarks', methods=['GET'])
 def web_get_bookmarks():
-    """Get bookmarks with filtering, search, and pagination (session-based auth)."""
+    """Get bookmarks HTML fragment for HTMX (session-based auth)."""
     user = get_current_user()
     if not user:
-        return jsonify({'error': 'Authentication required'}), 401
+        return '<div class="text-center py-8 text-red-600">Authentication required</div>', 401
     
     # Query parameters
     query = request.args.get('query', '').strip()
@@ -750,22 +750,13 @@ def web_get_bookmarks():
             error_out=False
         )
         
-        bookmarks = [bookmark.to_dict() for bookmark in pagination.items]
-        
-        return jsonify({
-            'bookmarks': bookmarks,
-            'pagination': {
-                'page': page,
-                'per_page': per_page,
-                'total': pagination.total,
-                'pages': pagination.pages,
-                'has_next': pagination.has_next,
-                'has_prev': pagination.has_prev
-            }
-        })
+        # Render HTML template for HTMX
+        return render_template('components/bookmarks_grid.html', 
+                             bookmarks=pagination.items,
+                             pagination=pagination)
         
     except Exception as e:
-        return jsonify({'error': 'Failed to retrieve bookmarks'}), 500
+        return '<div class="text-center py-8 text-red-600">Failed to load bookmarks</div>', 500
 
 
 @main_bp.route('/web-api/auth/change-password', methods=['POST'])
